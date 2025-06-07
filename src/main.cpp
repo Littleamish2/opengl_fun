@@ -18,7 +18,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main() {\n"
     "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\0";
+    "}\n\0";
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
@@ -45,6 +45,8 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
+    // register our callback function for resizing the viewport
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
     // INITIALIZE GLAD 
@@ -55,61 +57,54 @@ int main() {
     }
 
 
-    // CREATE OPENGL VIEWPORT
-    glViewport(0, 0, 800, 600); 
-    // register our callback function for resizing the viewport
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     
     
     // SHADER PROGRAM
     // --------------
     // compile vertex shader
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
     // check if shader compiled properly
     int successV;
-    char infoLog[512];
+    char infoLogV[512];
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &successV);
     if(!successV)
     {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLogV);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLogV << std::endl;
     }
 
     // compile fragment shader
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
 
     // check if fragment compiled properly
     int successF;
-    char infoLog[512];
+    char infoLogF[512];
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &successF);
     if(!successF)
     {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLogF);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLogF << std::endl;
     }
 
     // Shader program
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
+    unsigned int shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
     // check if shader program compiled properly
     int successS;
-    char infoLog[512];
+    char infoLogS[512];
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &successS);
     if(!successS)
     {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLog << std::endl;
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLogS);
+        std::cout << "ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n" << infoLogS << std::endl;
     }
 
     glDeleteShader(vertexShader);
@@ -119,7 +114,7 @@ int main() {
     // SETUP VERTEX DATA / ATTRIBUTES
     // create VBO
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
+            -0.5f, -0.5f, 0.0f,
             0.5f, -0.5f, 0.0f,
             0.0f,  0.5f, 0.0f
     };
@@ -176,6 +171,7 @@ int main() {
 
 // update viewport when resized
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    // create openGlViewport
     glViewport(0, 0, width, height);
 }
 
