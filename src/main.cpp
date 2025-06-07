@@ -3,7 +3,13 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 #include <iostream>
+#include <string>
+#include <ctime>
 
 #include <colorDef.h>
 
@@ -24,12 +30,32 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "   FragColour = vec4(colour.x, colour.y, colour.z, 1.0f);\n"
     "}\n\0";
 
+char *filepath = "/Users/matthewbach/Desktop/Code/OpenGL/captures/";
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, const char* filepath);
+void saveImage(const char* filepath, GLFWwindow* w);
 
 int main() {
+    // Create filepath based on date
+    time_t now = time(0);
+    tm* localTime = localtime(&now);
+
+    int yearI = localTime->tm_year + 1900; // Years since 1900
+    int monthI = localTime->tm_mon + 1;    // Months are 0-indexed
+    int dayI = localTime->tm_mday;
+
+    std::string yearS, monthS, dayS;
+    yearS = std::to_string(yearI);
+    monthS = std::to_string(monthI);
+    dayS = std::to_string(dayI);
     
+    std::string pathS(filepath);
+    pathS += (yearS + monthS + dayS + ".png");
+    const char* updated_filepath = pathS.c_str();
+
+
     // CONFIGURATION OF GLFW 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -170,7 +196,7 @@ int main() {
     while(!glfwWindowShouldClose(window)) 
     {
         // INPUT
-        processInput(window);
+        processInput(window, updated_filepath);
 
         // RENDERING
         // clear screen
@@ -207,7 +233,33 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 // handle inputs
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window, const char* filepath) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        saveImage(filepath, window);
+}
+
+// Credit to Lencerf, 
+// from: https://lencerf.github.io/post/2019-09-21-save-the-opengl-rendering-to-image-file/
+void saveImage(const char* filepath, GLFWwindow* w) {
+    
+    int width, height;
+    GLint pView[4];
+    glGetIntegerv(GL_VIEWPORT, pView);
+    width = pView[2];
+    height = pView[3];
+
+    GLsizei nrChannels = 3;
+    GLsizei stride = nrChannels * width;
+    stride += (stride % 4) ? (4 - stride % 4) : 0;
+    GLsizei bufferSize = stride * height;
+
+    std::vector<char> buffer(bufferSize);
+    glPixelStorei(GL_PACK_ALIGNMENT, 4);
+    glReadBuffer(GL_FRONT);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer.data());
+
+    stbi_flip_vertically_on_write(true);
+    stbi_write_png(filepath, width, height, nrChannels, buffer.data(), stride);
 }

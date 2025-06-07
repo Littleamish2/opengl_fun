@@ -8,6 +8,7 @@ add_subdirectory("thirdparty/glad")
 project(main1)
 set(CMAKE_CXX_STANDARD 17)
 
+
 # Mac-specific: OpenGL is exposed as a system framework
 find_package(OpenGL REQUIRED)
 
