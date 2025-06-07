@@ -30,6 +30,7 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "   FragColour = vec4(colour.x, colour.y, colour.z, 1.0f);\n"
     "}\n\0";
 
+// change this as needed
 char *filepath = "/Users/matthewbach/Desktop/Code/OpenGL/captures/";
 
 
@@ -52,7 +53,7 @@ int main() {
     dayS = std::to_string(dayI);
     
     std::string pathS(filepath);
-    pathS += (yearS + monthS + dayS + ".png");
+    pathS += (yearS + "_" + monthS + "_" + dayS + ".png");
     const char* updated_filepath = pathS.c_str();
 
 
