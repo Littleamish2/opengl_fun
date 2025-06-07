@@ -3,10 +3,13 @@
 
 #include <array>
 
+
+// Converts RGB values into OpenGL RGB normalized values (0-1)
 float normalizeRGB(float rgb) {
     return rgb / (float)(256);
 }
 
+// Generator that creates an RGB color array
 std::array<float, 3> createColor(float r, float g, float b) {
     std::array<float, 3> arr = {
         normalizeRGB(r),
@@ -16,6 +19,8 @@ std::array<float, 3> createColor(float r, float g, float b) {
 
     return arr;
 }
+
+// Colors
 
 std::array<float, 3> 
     pink = createColor(255, 192, 203);
