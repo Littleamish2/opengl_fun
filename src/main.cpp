@@ -15,16 +15,19 @@
 
 const char *vertexShaderSource = "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "layout (location = 1) in vec3 aColor;\n"
+    "out vec3 ourColor;\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   ourColor = aColor;\n"
     "}\n\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
     "out vec4 FragColor;\n"
-    "uniform vec4 ourColor;" //set in openGL code
+    "in vec3 ourColor;\n"
     "void main() {\n"
-    "   FragColor = ourColor;\n"
+    "   FragColor = vec4(ourColor, 1.0);\n"
     "}\n\0";
 
 // change this as needed
@@ -142,10 +145,11 @@ int main() {
     // SETUP VERTEX DATA / ATTRIBUTES
     // create data (triangle)
     float vertices[] = {
-        0.0f,  0.5f, 0.0f,  // top 
-        0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-    };
+        // positions         // colors
+        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+    };    
 
 
     // bind VAO then bind VBO, set vertex buffers, configure vertex attributes
@@ -156,11 +160,16 @@ int main() {
     glGenBuffers(1, &posVBO);
     glGenBuffers(1, &colVBO);
 
-    // copy into position vertex array
+    // copy into vertex array
     glBindBuffer(GL_ARRAY_BUFFER, posVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
     
 
    
@@ -181,17 +190,18 @@ int main() {
         glClearColor(pink[0], pink[1], pink[2], 1.0f); // state-setting
         glClear(GL_COLOR_BUFFER_BIT); // state-using
 
-        // draw triangle
-        // uniform specific code
+        // activate shader
+        glUseProgram(shaderProgram);
+
+        // update uniform color
         float timeValue = glfwGetTime();
         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
         int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        glUseProgram(shaderProgram);
         glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-        
+
+        // draw triangle
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(0);
 
         // process events, swap buffers
         glfwSwapBuffers(window);
