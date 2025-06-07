@@ -90,15 +90,14 @@ int main() {
 
 
     // bind VAO then bind VBO, set vertex buffers, configure vertex attributes
-    unsigned int posVBO, colVBO, VAO; // IDs
+    unsigned int VBO, VAO; // IDs
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    glGenBuffers(1, &posVBO);
-    glGenBuffers(1, &colVBO);
+    glGenBuffers(1, &VBO);
 
     // copy into vertex array
-    glBindBuffer(GL_ARRAY_BUFFER, posVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     
     // position attribute
@@ -130,6 +129,10 @@ int main() {
         // activate shader
         ourShader.use();
 
+        // time step
+        float timeValue = glfwGetTime();
+        ourShader.setFloat("xOffset", timeValue);
+
         // draw triangle
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -141,7 +144,7 @@ int main() {
 
     // De-allocate resources
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &posVBO);
+    glDeleteBuffers(1, &VBO);
     ourShader.deleteShader();
 
     // Terminate GLFW
