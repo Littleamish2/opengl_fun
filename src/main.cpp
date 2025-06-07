@@ -71,21 +71,18 @@ int main() {
         return -1;
     }
 
-
-    
     
     // SHADER SETUP
-    Shader ourShader("/Users/matthewbach/Desktop/Code/OpenGL/firsttime/src/shaders/vertShader.vs", "/Users/matthewbach/Desktop/Code/OpenGL/firsttime/src/shaders/fragShader.fs");
-   
+    Shader ourShader("/Users/matthewbach/Desktop/Code/OpenGL/firsttime/src/shaders/vertShader.vs", "/Users/matthewbach/Desktop/Code/OpenGL/firsttime/src/shaders/fragShader.fs");   
 
 
     // SETUP VERTEX DATA / ATTRIBUTES
     // create data (triangle)
     float vertices[] = {
-        // positions         // colors
-        0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-        0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+        // positions         
+        0.5f, -0.5f, 0.0f,    // bottom right
+        -0.5f, -0.5f, 0.0f,   // bottom left
+        0.0f,  0.5f, 0.0f     // top 
     };    
 
 
@@ -101,11 +98,8 @@ int main() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
-    glEnableVertexAttribArray(1);
     
 
    
@@ -129,8 +123,6 @@ int main() {
         // activate shader
         ourShader.use();
 
-        // uniform
-        ourShader.setFloat("xOffset", 0.5f);
 
         // draw triangle
         glBindVertexArray(VAO);
