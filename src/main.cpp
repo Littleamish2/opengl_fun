@@ -1,6 +1,11 @@
+// Created by Matthew Bach II
+// using learnopengl.com's tutorials
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+
+#include <colorDef.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
 void processInput(GLFWwindow *window);
@@ -49,8 +54,18 @@ int main() {
         processInput(window);
 
         // rendering
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearColor(pink[0], pink[1], pink[2], 1.0f); // state-setting
+        glClear(GL_COLOR_BUFFER_BIT); // state-using
+
+        float vertices[] = {
+            -0.5f, -0.5f, 0.0f,
+             0.5f, -0.5f, 0.0f,
+             0.0f,  0.5f, 0.0f
+        };
+
+        unsigned int VBO; // buffer ID of vertex buffer obj
+        glGenBuffers(1, &VBO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
         // process events, swap buffers
         glfwPollEvents();
