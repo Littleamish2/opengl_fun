@@ -30,3 +30,12 @@ std::array<float, 3>
 
 std::array<float, 3> 
     black = createColor(0, 0, 0);
+
+std::array<float, 3> 
+    red = createColor(256, 0, 0);
+
+std::array<float, 3> 
+    green = createColor(0, 256, 0);
+
+std::array<float, 3> 
+    blue = createColor(0, 0, 256);
