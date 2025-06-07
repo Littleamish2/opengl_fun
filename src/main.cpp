@@ -129,9 +129,8 @@ int main() {
         // activate shader
         ourShader.use();
 
-        // time step
-        float timeValue = glfwGetTime();
-        ourShader.setFloat("xOffset", timeValue);
+        // uniform
+        ourShader.setFloat("xOffset", 0.5f);
 
         // draw triangle
         glBindVertexArray(VAO);
