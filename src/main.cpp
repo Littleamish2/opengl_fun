@@ -23,7 +23,7 @@ char *filepath = "/Users/matthewbach/Desktop/Code/OpenGL/captures/";
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
-void processInput(GLFWwindow *window, const char* filepath);
+void processInput(GLFWwindow *window, const char* filepath, float* mix_add);
 void saveImage(const char* filepath, GLFWwindow* w);
 
 
@@ -86,10 +86,10 @@ int main() {
     // create data (rectangle)
     float vertices[] = {
         // positions          // colors           // texture coords
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // bottom right
         -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // top left 
     };  
 
     unsigned int indices[] = {
@@ -133,15 +133,19 @@ int main() {
 
     glBindTexture(GL_TEXTURE_2D, texture1);
     // options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { green[0], green[1], green[2], 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);  
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glBindTexture(GL_TEXTURE_2D, texture2);
     // options
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -175,13 +179,17 @@ int main() {
     ourShader.use();
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
+    
+
+    float mix_add = 0.0;
 
 
     // RENDER LOOP
     while(!glfwWindowShouldClose(window)) 
     {
         // INPUT
-        processInput(window, updated_filepath);
+        processInput(window, updated_filepath, &mix_add);
+        ourShader.setFloat("mixing", 0.2 + mix_add);
 
         // RENDERING
         // clear screen
@@ -225,11 +233,23 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 // handle inputs
-void processInput(GLFWwindow *window, const char* filepath) {
+void processInput(GLFWwindow *window, const char* filepath, float* mix_add) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         saveImage(filepath, window);
+    else {
+        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            *mix_add += 0.001f;
+            if (*mix_add > 0.8)
+                *mix_add = 0.8;
+        }
+        else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            *mix_add -= 0.001f;
+            if(*mix_add < -0.2) 
+                *mix_add = -0.2;
+        }
+    }
 }
 
 // Credit to Lencerf, 
