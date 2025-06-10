@@ -6,6 +6,8 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include <iostream>
 #include <string>
@@ -14,13 +16,18 @@
 #include <colorDef.h>
 #include <shader.h>
 
+
 // change this as needed
 char *filepath = "/Users/matthewbach/Desktop/Code/OpenGL/captures/";
+
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
 void processInput(GLFWwindow *window, const char* filepath);
 void saveImage(const char* filepath, GLFWwindow* w);
+
+
+
 
 int main() {
     // Create filepath based on date
@@ -73,41 +80,80 @@ int main() {
 
     
     // SHADER SETUP
-    Shader ourShader("/Users/matthewbach/Desktop/Code/OpenGL/firsttime/src/shaders/vertShader.vs", "/Users/matthewbach/Desktop/Code/OpenGL/firsttime/src/shaders/fragShader.fs");   
-
+    Shader ourShader("src/shaders/vertShader.vs", "src/shaders/fragShader.fs");   
 
     // SETUP VERTEX DATA / ATTRIBUTES
-    // create data (triangle)
+    // create data (rectangle)
     float vertices[] = {
-        // positions         
-        0.5f, -0.5f, 0.0f,    // bottom right
-        -0.5f, -0.5f, 0.0f,   // bottom left
-        0.0f,  0.5f, 0.0f     // top 
-    };    
+        // positions          // colors           // texture coords
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+    };  
+
+    unsigned int indices[] = {
+        0, 1, 3,
+        1, 2, 3
+    };
+
 
 
     // bind VAO then bind VBO, set vertex buffers, configure vertex attributes
-    unsigned int VBO, VAO; // IDs
+    unsigned int VBO, VAO, EBO; // IDs
     glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
 
     // copy into vertex array
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    
-
+    // element buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
    
-    
-    // unbind
-    glBindVertexArray(0); // not really necessary
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+
+
+    // TEXTURES
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // options
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // load and generate
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load("src/resources/container.jpg", &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    // free
+
+    stbi_image_free(data);
 
     
+    
+
 
     // RENDER LOOP
     while(!glfwWindowShouldClose(window)) 
@@ -117,16 +163,22 @@ int main() {
 
         // RENDERING
         // clear screen
-        glClearColor(pink[0], pink[1], pink[2], 1.0f); // state-setting
+        glClearColor(black[0], black[1], black[2], 1.0f); // state-setting
         glClear(GL_COLOR_BUFFER_BIT); // state-using
+    
+        
 
-        // activate shader
         ourShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+        ourShader.setInt("ourTexture", 0); 
 
 
-        // draw triangle
+
+        // draw rectangle with texture
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 
         // process events, swap buffers
         glfwSwapBuffers(window);
@@ -136,6 +188,7 @@ int main() {
     // De-allocate resources
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
     ourShader.deleteShader();
 
     // Terminate GLFW
