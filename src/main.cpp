@@ -24,9 +24,9 @@
 char *filepath = "/Users/matthewbach/Desktop/Code/OpenGL/captures/";
 
 
-
+// prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);  
-void processInput(GLFWwindow *window, const char* filepath, float* mix_add);
+void processInput(GLFWwindow *window, const char* filepath, float* mix_add, float* translation_vec3);
 void saveImage(const char* filepath, GLFWwindow* w);
 
 
@@ -186,6 +186,7 @@ int main() {
     
     // input state variables
     float mix_add = 0.0;
+    glm::vec3 trans_vec = glm::vec3(0.0f, 0.0f, 0.0f);
 
 
 
@@ -193,12 +194,12 @@ int main() {
     while(!glfwWindowShouldClose(window)) 
     {
         // INPUT
-        processInput(window, updated_filepath, &mix_add);
+        processInput(window, updated_filepath, &mix_add, glm::value_ptr(trans_vec));
         ourShader.setFloat("mixing", 0.2f + mix_add);
 
         // transformations
         glm::mat4 trans = glm::mat4(1.0f);
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));  
+        trans = glm::translate(trans, trans_vec);  
         trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
         unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
@@ -241,27 +242,37 @@ int main() {
 
 // update viewport when resized
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    // create openGlViewport
+    // creagite openGlViewport
     glViewport(0, 0, width, height);
 }
 
 // handle inputs
-void processInput(GLFWwindow *window, const char* filepath, float* mix_add) {
+void processInput(GLFWwindow *window, const char* filepath, float* mix_add, float* translation_vec3) {
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    else if(glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
         saveImage(filepath, window);
-    else {
-        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    else if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
             *mix_add += 0.001f;
             if (*mix_add > 0.8)
                 *mix_add = 0.8;
         }
-        else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    else if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
             *mix_add -= 0.001f;
             if(*mix_add < -0.2) 
                 *mix_add = -0.2;
         }
+    else if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        translation_vec3[1] += 0.01f;
+    }
+    else if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        translation_vec3[1] -= 0.01f;
+    }
+    else if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        translation_vec3[0] -= 0.01f;
+    }
+    else if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        translation_vec3[0] += 0.01f;
     }
 }
 
