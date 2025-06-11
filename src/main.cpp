@@ -3,6 +3,9 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -177,11 +180,13 @@ int main() {
 
     
     ourShader.use();
+    // texture setup
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
     
-
+    // input state variables
     float mix_add = 0.0;
+
 
 
     // RENDER LOOP
@@ -189,7 +194,15 @@ int main() {
     {
         // INPUT
         processInput(window, updated_filepath, &mix_add);
-        ourShader.setFloat("mixing", 0.2 + mix_add);
+        ourShader.setFloat("mixing", 0.2f + mix_add);
+
+        // transformations
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));  
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         // RENDERING
         // clear screen
